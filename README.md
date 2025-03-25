@@ -1,7 +1,6 @@
 ## 🎧 MusicBrainz → Spotify Release Browser
 
-**🔗 Live Demo:**  
-[https://yogo9.github.io/Recent-Spotify-Releases/](https://yogo9.github.io/Recent-Spotify-Releases/)
+
 
 This is a tool I use for myself to get the latest Spotify releases from an artist collection I maintain in [MusicBrainz](https://musicbrainz.org).
 
