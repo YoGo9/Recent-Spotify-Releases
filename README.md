@@ -14,8 +14,4 @@ This is a tool I use for myself to get the latest Spotify releases from an artis
    ```
    This will create a `spotify_urls.txt` file with Spotify artist URLs pulled from the MusicBrainz collection.
 
-2. Open the web app (included in this repo) and paste in the list of Spotify URLs.
-
-3. The app will fetch the latest **albums and singles** from those artists, and display them in a clean, sortable grid.
-
-4. You’ll have the option to **submit each release to MusicBrainz** via [Harmony](https://harmony.pulsewidth.org.uk).
+2. Download CSV from https://github.com/jakubito/spotify-release-list
