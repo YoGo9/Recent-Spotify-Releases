@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spotify Release Viewer</title>
+  <style>
+    :root {
+      --spotify-green: #1DB954;
+      --spotify-black: #121212;
+      --spotify-dark-gray: #282828;
+      --spotify-light-gray: #B3B3B3;
+      --spotify-mid-gray: #535353;
+      --spotify-hover-gray: #333333;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Circular', 'Helvetica Neue', Arial, sans-serif;
+      background-color: var(--spotify-black);
+      color: white;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--spotify-mid-gray);
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--spotify-green);
+      margin: 20px 0;
+      letter-spacing: -0.5px;
+    }
+    
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      width: 100%;
+      margin-top: 20px;
+    }
+    
+    .control-group {
+      display: flex;
+      align-items: center;
+      background: var(--spotify-dark-gray);
+      padding: 8px 16px;
+      border-radius: 8px;
+      gap: 10px;
+    }
+    
+    input[type="file"] {
+      background: var(--spotify-dark-gray);
+      color: white;
+      border-radius: 4px;
+      padding: 10px;
+      border: none;
+      max-width: 250px;
+    }
+    
+    input[type="file"]::-webkit-file-upload-button {
+      background: var(--spotify-green);
+      color: black;
+      font-weight: bold;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    
+    select {
+      background: var(--spotify-mid-gray);
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      font-size: 15px;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 12px;
+      padding-right: 30px;
+    }
+    
+    select:hover, button:hover {
+      opacity: 0.9;
+    }
+    
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    input[type="checkbox"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--spotify-light-gray);
+      border-radius: 3px;
+      position: relative;
+      cursor: pointer;
+    }
+    
+    input[type="checkbox"]:checked {
+      background-color: var(--spotify-green);
+      border-color: var(--spotify-green);
+    }
+    
+    input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 2px;
+      width: 5px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    
+    button {
+      background: var(--spotify-green);
+      color: black;
+      font-weight: bold;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background-color: #19a549;
+    }
+
+    button.secondary {
+      background: var(--spotify-mid-gray);
+      color: white;
+    }
+
+    button.secondary:hover {
+      background-color: #646464;
+    }
+    
+    .status {
+      text-align: center;
+      margin: 10px 0;
+      font-style: italic;
+      color: var(--spotify-light-gray);
+    }
+    
+    #output {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 25px;
+      padding: 10px 0;
+    }
+    
+    .release {
+      background: var(--spotify-dark-gray);
+      padding: 16px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      height: 100%;
+      position: relative;
+    }
+    
+    .release:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      background: var(--spotify-hover-gray);
+    }
+    
+    .release-type {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: var(--spotify-mid-gray);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+    
+    .release img {
+      width: 90%;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .release h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+      line-height: 1.3;
+      font-weight: 700;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    
+    .release .artist {
+      font-size: 14px;
+      color: var(--spotify-light-gray);
+      margin-bottom: 10px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    
+    .release .date {
+      margin-bottom: 15px;
+      font-size: 13px;
+      color: var(--spotify-light-gray);
+    }
+    
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 10px;
+    }
+    
+    .links a {
+      display: inline-block;
+      padding: 7px 12px;
+      background: var(--spotify-mid-gray);
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+    
+    .links .spotify {
+      background: var(--spotify-green);
+      color: black;
+    }
+    
+    .links a:hover {
+      filter: brightness(1.2);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px 0;
+      color: var(--spotify-light-gray);
+    }
+    
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .control-group {
+        justify-content: center;
+      }
+      
+      #output {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      }
+    }
+
+    .cache-status {
+      margin-top: 15px;
+      text-align: center;
+      color: var(--spotify-light-gray);
+      font-style: italic;
+      font-size: 14px;
+    }
+
+    .mb-status {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 12px;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .mb-status.checking {
+      background-color: #e0a800;
+    }
+
+    .mb-status.found {
+      background-color: var(--spotify-green);
+    }
+
+    .mb-status.not-found {
+      background-color: #dc3545;
+    }
+
+    .mb-status.pending {
+      background-color: var(--spotify-mid-gray);
+    }
+
+    .mb-status-tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      max-width: 200px;
+      z-index: 100;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s;
+      white-space: nowrap;
+    }
+
+    .mb-status:hover + .mb-status-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .recheck-btn {
+      position: absolute;
+      top: 10px;
+      right: 40px;
+      background: transparent;
+      border: none;
+      color: var(--spotify-light-gray);
+      cursor: pointer;
+      font-size: 12px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s, background-color 0.2s;
+    }
+
+    .release:hover .recheck-btn {
+      opacity: 1;
+    }
+
+    .recheck-btn:hover {
+      background-color: var(--spotify-mid-gray);
+      color: white;
+    }
+
+    .mb-queue-info {
+      margin-top: 10px;
+      text-align: center;
+      color: var(--spotify-light-gray);
+      font-size: 14px;
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background-color: var(--spotify-mid-gray);
+      border-radius: 3px;
+      margin-top: 10px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: var(--spotify-green);
+      width: 0%;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Spotify Release Viewer</h1>
+      <div class="controls">
+        <div class="control-group">
+          <input type="file" id="csv-file" accept=".csv" />
+        </div>
+        <div class="control-group">
+          <select id="type-filter">
+            <option value="">All Types</option>
+            <option value="album">Albums</option>
+            <option value="single">Singles</option>
+            <option value="appears_on">Appears On</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="filter-mb"> Show only missing in MusicBrainz
+          </label>
+        </div>
+        <div class="control-group">
+          <button id="clear-cache">Clear MusicBrainz Cache</button>
+        </div>
+      </div>
+      <div id="cache-status" class="cache-status"></div>
+      <div id="mb-queue-info" class="mb-queue-info"></div>
+      <div id="progress-container" class="progress-container">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+    </header>
+    
+    <div id="status" class="status"></div>
+    <div id="output"></div>
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script>
+    const MB_CACHE_KEY = 'mb-cache';
+    const SPOTIFY_CLIENT_ID = 'yourclientid';
+    const SPOTIFY_CLIENT_SECRET = 'yourclientsecret';
+
+    let accessToken = '';
+    let tokenExpiry = 0;
+    let currentReleases = [];
+    
+    // Rate-limited queue for MusicBrainz API
+    const mbQueue = {
+      items: [],
+      running: false,
+      delay: 1100, // 1.1 seconds to be safe with rate limiting
+      pending: 0,
+      completed: 0,
+      total: 0,
+      
+      add(spotifyUrl, albumId, forceRefresh = false) {
+        // Add an item to the queue
+        this.items.push({ spotifyUrl, albumId, forceRefresh });
+        this.total = this.items.length;
+        this.updateStatus();
+        
+        // Start processing if not already running
+        if (!this.running) {
+          this.processNext();
+        }
+      },
+      
+      async processNext() {
+        if (this.items.length === 0) {
+          this.running = false;
+          this.updateStatus();
+          updateProgressBar(100);
+          setTimeout(() => {
+            document.getElementById('progress-container').style.display = 'none';
+          }, 1000);
+          return;
+        }
+        
+        this.running = true;
+        const item = this.items.shift();
+        this.pending++;
+        this.updateStatus();
+        
+        // Update the UI for this specific album
+        const statusElement = document.getElementById(`mb-status-${item.albumId}`);
+        if (statusElement) {
+          statusElement.className = 'mb-status checking';
+          statusElement.innerHTML = '⏳';
+          
+          const tooltipElement = document.getElementById(`mb-tooltip-${item.albumId}`);
+          if (tooltipElement) {
+            tooltipElement.textContent = 'Checking MusicBrainz...';
+          }
+        }
+        
+        try {
+          // Check cache first unless force refresh
+          const mbCache = JSON.parse(localStorage.getItem(MB_CACHE_KEY) || '{}');
+          let mbLink = null;
+          
+          if (!item.forceRefresh && mbCache.hasOwnProperty(item.spotifyUrl)) {
+            mbLink = mbCache[item.spotifyUrl];
+            console.log('Using cached result for', item.spotifyUrl, mbLink);
+          } else {
+            // Make the API request
+            console.log('Checking MusicBrainz for', item.spotifyUrl);
+            mbLink = await checkMusicBrainzApi(item.spotifyUrl);
+          }
+          
+          // Update the UI with the result
+          updateReleaseWithMusicBrainzInfo(item.albumId, mbLink);
+        } catch (error) {
+          console.error('Error processing MusicBrainz queue item:', error);
+          if (statusElement) {
+            statusElement.className = 'mb-status not-found';
+            statusElement.innerHTML = '❌';
+            
+            const tooltipElement = document.getElementById(`mb-tooltip-${item.albumId}`);
+            if (tooltipElement) {
+              tooltipElement.textContent = 'Error checking MusicBrainz';
+            }
+          }
+        }
+        
+        this.pending--;
+        this.completed++;
+        updateProgressBar((this.completed / this.total) * 100);
+        this.updateStatus();
+        
+        // Wait and process the next item
+        setTimeout(() => this.processNext(), this.delay);
+      },
+      
+      updateStatus() {
+        const queueInfo = document.getElementById('mb-queue-info');
+        const progressContainer = document.getElementById('progress-container');
+        
+        if (this.items.length > 0 || this.pending > 0) {
+          queueInfo.textContent = `MusicBrainz queue: ${this.completed}/${this.total} checked, ${this.pending} in progress, ${this.items.length} pending`;
+          progressContainer.style.display = 'block';
+        } else if (this.completed > 0) {
+          queueInfo.textContent = `MusicBrainz check complete: ${this.completed} releases processed`;
+        } else {
+          queueInfo.textContent = '';
+        }
+      },
+      
+      clear() {
+        this.items = [];
+        this.running = false;
+        this.pending = 0;
+        this.completed = 0;
+        this.total = 0;
+        this.updateStatus();
+      }
+    };
+    
+    // Display cache status on page load
+    updateCacheStatus();
+
+    async function getAccessToken() {
+      if (accessToken && Date.now() < tokenExpiry - 60000) return accessToken;
+
+      setStatus("Getting Spotify access token...");
+      try {
+        const res = await fetch("https://accounts.spotify.com/api/token", {
+          method: "POST",
+          headers: {
+            "Authorization": "Basic " + btoa(SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET),
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: "grant_type=client_credentials"
+        });
+        const data = await res.json();
+        accessToken = data.access_token;
+        tokenExpiry = Date.now() + data.expires_in * 1000;
+        setStatus("");
+        return accessToken;
+      } catch (err) {
+        setStatus("Error getting Spotify token: " + err.message);
+        throw err;
+      }
+    }
+
+    async function fetchSpotifyImage(id) {
+      try {
+        const token = await getAccessToken();
+        const res = await fetch(`https://api.spotify.com/v1/albums/${id}`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (!res.ok) return '';
+        const data = await res.json();
+        return data.images?.[0]?.url || '';
+      } catch (err) {
+        console.warn('Failed to fetch image for ID:', id, err);
+        return '';
+      }
+    }
+
+    async function checkMusicBrainzApi(spotifyUrl) {
+      // This function makes the actual API call to MusicBrainz
+      // It doesn't handle caching - that's done by the calling function
+      try {
+        const res = await fetch(`https://musicbrainz.org/ws/2/url/?resource=${encodeURIComponent(spotifyUrl)}&fmt=json&inc=release-rels`);
+        if (!res.ok) throw new Error('Not found');
+        const data = await res.json();
+        const release = data.relations?.find(r => r.release)?.release;
+        
+        if (release?.id) {
+          const url = `https://musicbrainz.org/release/${release.id}`;
+          
+          // Store in cache
+          const mbCache = JSON.parse(localStorage.getItem(MB_CACHE_KEY) || '{}');
+          mbCache[spotifyUrl] = url;
+          localStorage.setItem(MB_CACHE_KEY, JSON.stringify(mbCache));
+          updateCacheStatus();
+          
+          return url;
+        }
+        
+        // Store null result in cache
+        const mbCache = JSON.parse(localStorage.getItem(MB_CACHE_KEY) || '{}');
+        mbCache[spotifyUrl] = null;
+        localStorage.setItem(MB_CACHE_KEY, JSON.stringify(mbCache));
+        updateCacheStatus();
+        
+        return null;
+      } catch (error) {
+        console.warn('MusicBrainz lookup failed for', spotifyUrl, error);
+        
+        // Store null result in cache
+        const mbCache = JSON.parse(localStorage.getItem(MB_CACHE_KEY) || '{}');
+        mbCache[spotifyUrl] = null;
+        localStorage.setItem(MB_CACHE_KEY, JSON.stringify(mbCache));
+        updateCacheStatus();
+        
+        return null;
+      }
+    }
+
+    function updateCacheStatus() {
+      const mbCache = JSON.parse(localStorage.getItem(MB_CACHE_KEY) || '{}');
+      const cacheCount = Object.keys(mbCache).length;
+      const foundCount = Object.values(mbCache).filter(v => v !== null).length;
+      
+      document.getElementById('cache-status').textContent = 
+        cacheCount > 0 
+          ? `MusicBrainz cache: ${cacheCount} entries stored (${foundCount} found, ${cacheCount - foundCount} not found)` 
+          : 'MusicBrainz cache is empty';
+    }
+
+    function setStatus(message) {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = message;
+      statusEl.style.display = message ? 'block' : 'none';
+    }
+    
+    function updateProgressBar(percentage) {
+      document.getElementById('progress-bar').style.width = `${percentage}%`;
+    }
+    
+    function updateReleaseWithMusicBrainzInfo(albumId, mbLink) {
+      const linkContainer = document.getElementById(`links-${albumId}`);
+      const statusElement = document.getElementById(`mb-status-${albumId}`);
+      const tooltipElement = document.getElementById(`mb-tooltip-${albumId}`);
+      
+      if (linkContainer) {
+        // Remove any existing MusicBrainz link
+        const existingLink = linkContainer.querySelector('a[href^="https://musicbrainz.org"]');
+        if (existingLink) {
+          existingLink.remove();
+        }
+        
+        // Add the new link if found
+        if (mbLink) {
+          const mbLinkElement = document.createElement('a');
+          mbLinkElement.href = mbLink;
+          mbLinkElement.target = '_blank';
+          mbLinkElement.textContent = 'MusicBrainz';
+          linkContainer.appendChild(mbLinkElement);
+        }
+      }
+      
+      if (statusElement) {
+        if (mbLink) {
+          statusElement.className = 'mb-status found';
+          statusElement.innerHTML = '✓';
+          
+          if (tooltipElement) {
+            tooltipElement.textContent = 'Found in MusicBrainz';
+          }
+        } else {
+          statusElement.className = 'mb-status not-found';
+          statusElement.innerHTML = '×';
+          
+          if (tooltipElement) {
+            tooltipElement.textContent = 'Not found in MusicBrainz';
+          }
+        }
+      }
+      
+      // Check if we need to hide this release based on filter settings
+      const onlyMissingMB = document.getElementById('filter-mb')?.checked;
+      const releaseElement = document.getElementById(`release-${albumId}`);
+      
+      if (releaseElement && onlyMissingMB) {
+        releaseElement.style.display = mbLink ? 'none' : 'flex';
+      }
+    }
+    
+    function recheckMusicBrainz(albumId) {
+      const releaseElement = document.getElementById(`release-${albumId}`);
+      if (!releaseElement) return;
+      
+      const spotifyUrl = releaseElement.getAttribute('data-spotify-url');
+      if (!spotifyUrl) return;
+      
+      // Clear this specific entry from the cache
+      const mbCache = JSON.parse(localStorage.getItem(MB_CACHE_KEY) || '{}');
+      if (mbCache.hasOwnProperty(spotifyUrl)) {
+        delete mbCache[spotifyUrl];
+        localStorage.setItem(MB_CACHE_KEY, JSON.stringify(mbCache));
+        updateCacheStatus();
+      }
+      
+      // Add to the queue with force refresh
+      mbQueue.add(spotifyUrl, albumId, true);
+    }
+
+    async function renderReleases(releases) {
+      currentReleases = releases;
+      const output = document.getElementById('output');
+      output.innerHTML = '<div class="loading">Loading releases...</div>';
+      
+      // Debug info
+      console.log("Rendering releases:", releases);
+      if (!releases || releases.length === 0) {
+        output.innerHTML = '<div class="loading">No releases found in the uploaded file. Please check the CSV format.</div>';
+        return;
+      }
+      
+      // Display sample of first row for debugging
+      console.log("First row sample:", releases[0]);
+      document.getElementById('status').innerHTML += `<br>First row sample: ${JSON.stringify(releases[0]).substring(0, 100)}...`;
+      
+      const onlyMissingMB = document.getElementById('filter-mb')?.checked;
+      const selectedType = document.getElementById('type-filter').value;
+      
+      // Clear previous queue
+      mbQueue.clear();
+      
+      // First filter by type
+      let filteredReleases = releases;
+      if (selectedType) {
+        filteredReleases = releases.filter(album => album.Type && album.Type.includes(selectedType));
+      }
+      
+      // Show loading status
+      setStatus(`Processing ${filteredReleases.length} releases...`);
+      
+      // Create a fragment to avoid repeated DOM updates
+      const fragment = document.createDocumentFragment();
+      let displayCount = 0;
+      
+      // Cache for looking up MusicBrainz info
+      const mbCache = JSON.parse(localStorage.getItem(MB_CACHE_KEY) || '{}');
+      
+      // First pass: create all the UI elements
+      for (const album of filteredReleases) {
+        // Verify this album has the required fields
+        if (!album.ID) {
+          console.warn("Album missing ID:", album);
+          continue;
+        }
+        
+        const spotifyUrl = `https://open.spotify.com/album/${album.ID}`;
+        const mbLink = mbCache[spotifyUrl] || null;
+        
+        // Skip right away if we only want missing MB entries and we know this one has a link
+        if (onlyMissingMB && mbLink) continue;
+        
+        displayCount++;
+        const image = await fetchSpotifyImage(album.ID);
+        const div = document.createElement('div');
+        div.className = 'release';
+        div.id = `release-${album.ID}`;
+        div.setAttribute('data-spotify-url', spotifyUrl);
+        
+        let mbStatusIcon = '?';
+        let mbStatusClass = 'pending';
+        let mbTooltip = 'MusicBrainz status unknown';
+        
+        if (mbCache.hasOwnProperty(spotifyUrl)) {
+          if (mbLink) {
+            mbStatusIcon = '✓';
+            mbStatusClass = 'found';
+            mbTooltip = 'Found in MusicBrainz';
+          } else {
+            mbStatusIcon = '×';
+            mbStatusClass = 'not-found';
+            mbTooltip = 'Not found in MusicBrainz';
+          }
+        } else {
+          mbTooltip = 'Waiting to check MusicBrainz';
+        }
+        
+        div.innerHTML = `
+          <span class="release-type">${album.Type ? album.Type.toUpperCase() : 'UNKNOWN'}</span>
+          <button class="recheck-btn" title="Force recheck in MusicBrainz" onclick="recheckMusicBrainz('${album.ID}')">↻</button>
+          <span id="mb-status-${album.ID}" class="mb-status ${mbStatusClass}">${mbStatusIcon}</span>
+          <span id="mb-tooltip-${album.ID}" class="mb-status-tooltip">${mbTooltip}</span>
+          <img src="${image || '/api/placeholder/400/400'}" alt="${album.Title || 'Unknown'}" loading="lazy" />
+          <h3 title="${album.Title || 'Unknown'}">${album.Title || 'Unknown'}</h3>
+          <p class="artist" title="${album.Artists || 'Unknown'}"><strong>${album.Artists || 'Unknown'}</strong></p>
+          <p class="date">${album.Date || 'Unknown'}</p>
+          <div id="links-${album.ID}" class="links">
+            <a href="${spotifyUrl}" target="_blank" class="spotify">Spotify</a>
+            <a href="https://harmony.pulsewidth.org.uk/release?url=${encodeURIComponent(spotifyUrl)}&category=all" target="_blank">Harmony</a>
+            ${mbLink ? `<a href="${mbLink}" target="_blank">MusicBrainz</a>` : ''}
+          </div>
+        `;
+        fragment.appendChild(div);
+        
+        // If we don't have cache entry, add to the queue for checking
+        if (!mbCache.hasOwnProperty(spotifyUrl)) {
+          mbQueue.add(spotifyUrl, album.ID);
+        }
+      }
+      
+      // Clear and update the output
+      output.innerHTML = '';
+      if (displayCount > 0) {
+        output.appendChild(fragment);
+        setStatus(`Showing ${displayCount} releases${onlyMissingMB ? ' missing in MusicBrainz' : ''}`);
+      } else {
+        output.innerHTML = '<p class="loading">No matching releases found. Please check that your CSV has the correct columns: ID, Title, Artists, Date, Type</p>';
+        setStatus('');
+      }
+    }
+
+    document.getElementById('csv-file').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      setStatus("Parsing CSV file...");
+      
+      // Debug info
+      console.log("File selected:", file.name, file.size, "bytes");
+      document.getElementById('status').innerHTML = `Parsing CSV file: ${file.name} (${file.size} bytes)`;
+      
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          console.log("Parsed CSV rows:", results.data.length, results);
+          document.getElementById('status').innerHTML += `<br>CSV parsed: ${results.data.length} rows found.`;
+          
+          if (results.data.length === 0) {
+            document.getElementById('status').innerHTML += `<br>No data rows found in CSV.`;
+          } else if (!results.data[0].ID || !results.data[0].Type) {
+            document.getElementById('status').innerHTML += `<br>Warning: CSV may be missing required columns. Found: ${Object.keys(results.data[0]).join(', ')}`;
+          }
+          
+          renderReleases(results.data);
+        },
+        error: function(error) {
+          console.error("CSV Parse error:", error);
+          document.getElementById('status').innerHTML = `Error parsing CSV: ${error.message}`;
+        }
+      });
+    });
+
+    document.getElementById('type-filter').addEventListener('change', () => {
+      if (currentReleases.length > 0) {
+        renderReleases(currentReleases);
+      }
+    });
+
+    document.getElementById('filter-mb').addEventListener('change', () => {
+      if (currentReleases.length > 0) {
+        renderReleases(currentReleases);
+      }
+    });
+    
+    document.getElementById('clear-cache').addEventListener('click', clearCache);
+    
+    function clearCache() {
+      if (confirm('Are you sure you want to clear the MusicBrainz cache? This will require re-fetching all data.')) {
+        localStorage.removeItem(MB_CACHE_KEY);
+        updateCacheStatus();
+        alert('MusicBrainz cache cleared successfully.');
+        // Re-render the current releases to reflect the cleared cache
+        if (currentReleases.length > 0) {
+          renderReleases(currentReleases);
+        }
+      }
+    }
+    
+    // Expose the recheck function to the global scope for button event handlers
+    window.recheckMusicBrainz = recheckMusicBrainz;
+  </script>
+</body>
+</html>
+        
